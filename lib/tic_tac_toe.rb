@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'pry-byebug'
 
 module TicTacToe
@@ -18,7 +19,7 @@ class GameManager
   end
 
   def board_state?
-    # TODO refactor checks
+    # TODO: refactor checks
     # horizontal check
     @board.each do |row|
       return 'victory' if n_consecutive?(row[0], row, 3)
@@ -50,6 +51,7 @@ class GameManager
     token_count = 0
     while column < 3
       break if @board[row][column].nil?
+
       token_count += 1 if @board[row][column] == token
       # go diagonally to next part
       row += 1
@@ -57,13 +59,14 @@ class GameManager
     end
     return 'victory' if token_count == 3
 
-    #reverse diagonal check
+    # reverse diagonal check
     column = 0
     row = 2
     token = @board[row][column]
     token_count = 0
     while column < 3
       break if @board[row][column].nil?
+
       token_count += 1 if @board[row][column] == token
       # go diagonally to next part
       row -= 1
@@ -71,16 +74,13 @@ class GameManager
     end
     return 'victory' if token_count == 3
 
-
-
     # none of the victory conditions were achieved therefore the board can be unfinished or tied
     # while there is a nil, there's a place to make a move, board can't be finished
     @board.flatten.include?(nil) ? 'unfinished' : 'tie'
-
   end
 
   # returns true when elements are consecutively in a row n times
-  def n_consecutive?(token, row, n)
+  def n_consecutive?(token, row, num)
     token_count = 0
     row.each do |cell_token|
       break if cell_token.nil?
@@ -91,7 +91,7 @@ class GameManager
         token_count = 0
       end
     end
-    token_count == n
+    token_count == num
   end
 
   def play
@@ -120,7 +120,34 @@ end
 # Manages what gets put on the screen
 class Screen
   @prompt_text = 'Where are you gonna go?'
-  def print_board(board); end
+  def print_board(board, size)
+    width = 8
+    height = 3
+    vertical_line(width, height)
+    horizontal_line(width)
+    vertical_line(width, height)
+    horizontal_line(width)
+    vertical_line(width, height)
+  end
+
+  def vertical_line(width, height)
+    height.times do
+      print(" " * width)
+      print('|')
+      print(" " * width)
+      print('|')
+      puts ''
+    end
+  end
+  def horizontal_line(width)
+    print("-" * width)
+    print("+")
+    print("-" * width)
+    print("+")
+    print("-" * width)
+    puts("")
+  end
+
 
   def print_prompt; end
 
@@ -144,3 +171,6 @@ class Player
     # return it
   end
 end
+
+screen = Screen.new
+screen.print_board("",9)
