@@ -19,14 +19,24 @@ class GameManager
   def board_state?
     # horizontal check
     @board.each do |row|
-      start_token = row[0]
-      token_count = 0
-      row.each do |cell_token|
-        break if cell_token.nil?
-        token_count += 1 if start_token == cell_token
+      if n_consecutive?(row[0],row, 3)
+        return 'victory'
       end
-      return 'victory' if token_count == 3
     end
+  end
+
+  # returns true when elements are consecutively in a row n times
+  def n_consecutive?(token, row, n)
+    token_count = 0
+    row.each do |cell_token|
+      break if cell_token.nil?
+      if token == cell_token
+        token_count += 1
+      else
+        token_count = 0
+      end
+    end
+    return token_count == n
   end
 
   def play
