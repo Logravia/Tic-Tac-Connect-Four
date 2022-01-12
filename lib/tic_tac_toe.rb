@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'pry-byebug'
 
 module TicTacToe
   class Error < StandardError; end
@@ -17,6 +18,7 @@ class GameManager
   end
 
   def board_state?
+    # TODO refactor checks
     # horizontal check
     @board.each do |row|
       return 'victory' if n_consecutive?(row[0], row, 3)
@@ -42,8 +44,33 @@ class GameManager
     end
 
     # main diagonal check
+    column = 0
+    row = 0
+    token = @board[0][0]
+    token_count = 0
+    while column < 3
+      break if @board[row][column].nil?
+      token_count += 1 if @board[row][column] == token
+      # go diagonally to next part
+      row += 1
+      column += 1
+    end
+    return 'victory' if token_count == 3
 
     #reverse diagonal check
+    column = 0
+    row = 2
+    token = @board[row][column]
+    token_count = 0
+    while column < 3
+      break if @board[row][column].nil?
+      token_count += 1 if @board[row][column] == token
+      # go diagonally to next part
+      row -= 1
+      column += 1
+    end
+    return 'victory' if token_count == 3
+
 
 
     # none of the victory conditions were achieved therefore the board can be unfinished or tied
