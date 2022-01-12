@@ -119,6 +119,19 @@ end
 
 # Manages what gets put on the screen
 class Screen
+
+  attr_reader :circle, :cross
+
+  def initialize
+  @circle = [[nil,nil,nil, nil,'#',nil,nil,nil],
+             [nil,nil,'#',nil,nil,nil,'#',nil],
+             [nil,nil,nil,nil,'#',nil,nil,nil]]
+
+  @cross = [[nil,nil,'#', nil,nil,nil, '#',nil],
+            [nil,nil,nil,nil,'#',nil,nil,nil],
+            [nil,nil,'#', nil,nil,nil, '#',nil]]
+  end
+
   @prompt_text = 'Where are you gonna go?'
   def print_board(board, size)
     width = 8
@@ -148,6 +161,18 @@ class Screen
     puts("")
   end
 
+  def print_symbol()
+    cross.each() do |row|
+      row.each() do |v|
+        if v.nil?
+          print (' ')
+        else
+          print v
+        end
+      end
+      puts ("")
+    end
+  end
 
   def print_prompt; end
 
@@ -174,3 +199,4 @@ end
 
 screen = Screen.new
 screen.print_board("",9)
+screen.print_symbol()
