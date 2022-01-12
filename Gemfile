@@ -1,7 +1,5 @@
-source "https://rubygems.org"
+# frozen_string_literal: true
 
-# Specify your gem's dependencies in tic_tac_toe.gemspec
-gemspec
+source 'https://rubygems.org'
 
-gem "rake", "~> 12.0"
-gem "rspec", "~> 3.0"
+gem 'rspec', '~>3.9'
