@@ -130,6 +130,8 @@ class Screen
   @cross = [[nil,nil,'#', nil,nil,nil, '#',nil],
             [nil,nil,nil,nil,'#',nil,nil,nil],
             [nil,nil,'#', nil,nil,nil, '#',nil]]
+
+  @display_board
   end
 
   @prompt_text = 'Where are you gonna go?'
@@ -143,26 +145,52 @@ class Screen
     vertical_line(width, height)
   end
 
-  def vertical_line(width, height)
-    height.times do
-      print(" " * width)
-      print('|')
-      print(" " * width)
-      print('|')
-      puts ''
-    end
-  end
-  def horizontal_line(width)
-    print("-" * width)
-    print("+")
-    print("-" * width)
-    print("+")
-    print("-" * width)
-    puts("")
+  def gen_display_board(width, height)
+    arr = []
+    arr = gen_vertical_line(arr)
+    arr = gen_horizontal_line(arr)
+    arr = gen_vertical_line(arr)
+    arr = gen_horizontal_line(arr)
+    arr = gen_vertical_line(arr)
+    arr
   end
 
-  def print_symbol()
-    cross.each() do |row|
+  def gen_vertical_line(arr, width=8, height=3)
+    height.times do
+      line = []
+      width.times do
+        line << nil
+      end
+      line << '|'
+      width.times do
+        line << nil
+      end
+      line << '|'
+      width.times do
+        line << nil
+      end
+      arr << line
+    end
+    arr
+  end
+  def gen_horizontal_line(arr, width=8)
+    line = []
+    width.times do
+      line << '-'
+    end
+    line << '+'
+    width.times do
+      line << '-'
+    end
+    line << '+'
+    width.times do
+      line << '-'
+    end
+    arr << line
+  end
+
+  def print_symbol(arr)
+    arr.each() do |row|
       row.each() do |v|
         if v.nil?
           print (' ')
@@ -198,5 +226,3 @@ class Player
 end
 
 screen = Screen.new
-screen.print_board("",9)
-screen.print_symbol()

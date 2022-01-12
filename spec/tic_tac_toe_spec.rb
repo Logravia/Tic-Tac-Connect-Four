@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe TicTacToe do
-  it 'recognizes horizontal victory I' do
+  it 'reads horizontal victory I' do
     board = [[1, 1, 1],
              [nil, nil, nil],
              [nil, nil, nil]]
@@ -51,15 +51,15 @@ RSpec.describe TicTacToe do
   end
   it 'reads tie' do
     board = [[0, 1, 1],
-             [1, 0, 1],
-             [1, 0, 0]]
+             [1, 0, 0],
+             [1, 0, 1]]
     game = GameManager.new
     game.instance_variable_set(:@board, board)
     expect(game.board_state?).to eq('tie')
   end
   it 'reads tie II' do
-    board = [[0, 1, 0],
-             [1, 0, 1],
+    board = [[1, 1, 0],
+             [0, 0, 1],
              [1, 1, 0]]
     game = GameManager.new
     game.instance_variable_set(:@board, board)
