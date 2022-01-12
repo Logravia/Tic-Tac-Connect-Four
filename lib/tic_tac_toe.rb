@@ -17,8 +17,16 @@ class GameManager
   end
 
   def board_state?
-    # Check whether the board is still playable, there's tie or someone won
-    0
+    # horizontal check
+    @board.each do |row|
+      start_token = row[0]
+      token_count = 0
+      row.each do |cell_token|
+        break if cell_token.nil?
+        token_count += 1 if start_token == cell_token
+      end
+      return 'victory' if token_count == 3
+    end
   end
 
   def play
