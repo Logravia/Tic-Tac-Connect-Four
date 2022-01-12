@@ -19,10 +19,37 @@ class GameManager
   def board_state?
     # horizontal check
     @board.each do |row|
-      if n_consecutive?(row[0],row, 3)
-        return 'victory'
-      end
+      return 'victory' if n_consecutive?(row[0], row, 3)
     end
+
+    # vertical check
+    column = 0
+    while column < 3
+      row = 0
+      token = @board[row][column]
+      token_count = 0
+      while row < 3
+        break if @board[row][column].nil?
+
+        token_count += 1 if @board[row][column] == token
+        # go down the row
+        row += 1
+      end
+      return 'victory' if token_count == 3
+
+      # finished one column, moving on to next
+      column += 1
+    end
+
+    # main diagonal check
+
+    #reverse diagonal check
+
+
+    # none of the victory conditions were achieved therefore the board can be unfinished or tied
+    # while there is a nil, there's a place to make a move, board can't be finished
+    @board.flatten.include?(nil) ? 'unfinished' : 'tie'
+
   end
 
   # returns true when elements are consecutively in a row n times
@@ -30,13 +57,14 @@ class GameManager
     token_count = 0
     row.each do |cell_token|
       break if cell_token.nil?
+
       if token == cell_token
         token_count += 1
       else
         token_count = 0
       end
     end
-    return token_count == n
+    token_count == n
   end
 
   def play
