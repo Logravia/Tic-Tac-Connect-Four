@@ -119,23 +119,14 @@ end
 
 # Manages what gets put on the screen
 class Screen
-
   attr_reader :circle, :cross
 
   def initialize
-  @circle = [[nil,nil,nil, nil,'#',nil,nil,nil],
-             [nil,nil,'#',nil,nil,nil,'#',nil],
-             [nil,nil,nil,nil,'#',nil,nil,nil]]
-
-  @cross = [[nil,nil,'#', nil,nil,nil, '#',nil],
-            [nil,nil,nil,nil,'#',nil,nil,nil],
-            [nil,nil,'#', nil,nil,nil, '#',nil]]
-
-  @display_board
+    @circle = { [0, 4] => '#', [1, 2] => '#', [1, 5] => '#', [2, 4] => '#' }
+    @cross = { [0, 2] => '#', [0, 6] => '#', [1, 4] => '#', [2, 2] => '#', [2, 6] => '#' }
   end
 
-  @prompt_text = 'Where are you gonna go?'
-  def print_board(board, size)
+  def print_board(_board, _size)
     width = 8
     height = 3
     vertical_line(width, height)
@@ -145,35 +136,46 @@ class Screen
     vertical_line(width, height)
   end
 
-  def gen_display_board(width, height)
+  def gen_display_board(_width = 8, _height = 3)
     arr = []
     arr = gen_vertical_line(arr)
     arr = gen_horizontal_line(arr)
     arr = gen_vertical_line(arr)
     arr = gen_horizontal_line(arr)
     arr = gen_vertical_line(arr)
-    arr
   end
 
-  def gen_vertical_line(arr, width=8, height=3)
+  def board_arr_to_hash(arr)
+    hash = {}
+    arr.each_with_index do |row, x|
+      row.each_with_index do |cell, y|
+        hash[[x, y]] = cell
+      end
+    end
+    hash
+  end
+
+  def gen_vertical_line(arr, width = 8, height = 3)
     height.times do
       line = []
       width.times do
-        line << nil
+        line << ' '
       end
       line << '|'
       width.times do
-        line << nil
+        line << ' '
       end
       line << '|'
       width.times do
-        line << nil
+        line << ' '
       end
+      line << "\n"
       arr << line
     end
     arr
   end
-  def gen_horizontal_line(arr, width=8)
+
+  def gen_horizontal_line(arr, width = 8)
     line = []
     width.times do
       line << '-'
@@ -186,26 +188,35 @@ class Screen
     width.times do
       line << '-'
     end
+    line << "\n"
     arr << line
   end
-
   def print_symbol(arr)
-    arr.each() do |row|
-      row.each() do |v|
+    arr.each do |row|
+      row.each do |v|
         if v.nil?
-          print (' ')
+          print(' ')
         else
           print v
         end
       end
-      puts ("")
+      puts('')
     end
   end
-
+  def print_hash_canvas(hash)
+    hash.each do |_k, v|
+      print v
+    end
+  end
+  def put_symbol(hash, x, y)
+    y_offset = 4 * y
+    x_offset = 8 * x
+    cross.each do |k, v|
+      hash[[k[0] + y_offset, k[1] + x_offset]] = v
+    end
+  end
   def print_prompt; end
-
   def print_result; end
-
   def clear; end
 end
 
@@ -226,3 +237,6 @@ class Player
 end
 
 screen = Screen.new
+canvas_arr = screen.gen_display_board
+hash = screen.board_arr_to_hash(canvas_arr)
+screen.print_hash_canvas(hash)
