@@ -2,59 +2,54 @@
 
 require 'pry-byebug'
 
-module TicTacToe
-  class Error < StandardError; end
-end
-
 # Manages the game - main loop, scores, board, board state, two player instances and the screen
 class GameManager
   # 2D array for 3x3 board
-  attr_reader :board
+  attr_reader :board, :players, :screen
   def initialize
-    @board = Board.new()
+    @board = Board.new
+    @screen = Screen.new
+    @players =[Player.new('p1'), Player.new('p2')]
   end
+
   def play
     loop do
-      # Main game loop
+      board.set_token(players[0].name,players[0].choose)
+      screen.update_canvas(board.board)
+      screen.show_board
+      break if board.state? == 'victory'
     end
   end
 
   def reset
-    @board = Board.new()
+    @board = Board.new
   end
 end
 
-# Manages what gets put on the screen
+# Manages what gets put on
 class Screen
-  attr_reader :circle, :cross
+  attr_reader :circle, :cross, :canvas
 
   def initialize
-    @circle = { [0, 4] => '#', [1, 2] => '#', [1, 5] => '#', [2, 4] => '#' }
-    @cross = { [0, 2] => '#', [0, 6] => '#', [1, 4] => '#', [2, 2] => '#', [2, 6] => '#' }
+    @circle = { [1, 4] => '0', [2, 3] => '0', [2, 6] => '0', [3, 5] => '0' }
+    @cross = { [1, 2] => '#', [1, 6] => '#', [2, 4] => '#', [3, 2] => '#', [3, 6] => '#' }
+    @canvas = []
+    gen_canvas
   end
 
-  def gen_display_board(height)
-    arr = []
-    height.time do
-      arr = gen_horizontal_line(arr)
-      arr = gen_vertical_line(arr)
-      arr = gen_horizontal_line(arr)
-    end
-  end
-
-  def board_arr_to_hash(arr)
-    hash = {}
-    arr.each_with_index do |row, x|
-      row.each_with_index do |cell, y|
-        hash[[x, y]] = cell
-      end
-    end
-    hash
-  end
-
-  def gen_vertical_line(arr)
-    spacing = 8
+  def gen_canvas(height = 3)
     height.times do
+      gen_horizontal_line
+      gen_vertical_line
+    end
+    gen_horizontal_line
+  end
+
+  def gen_vertical_line(length = 3)
+    spacing = 8
+    line = []
+
+    length.times do
       line = []
       line << '|'
       spacing.times do
@@ -68,18 +63,15 @@ class Screen
       spacing.times do
         line << ' '
       end
+      line << '|'
       line << "\n"
-      arr << line
+      canvas << line
     end
-    arr
   end
 
-  def gen_horizontal_line(arr)
+  def gen_horizontal_line
     spacing = 8
     line = []
-    spacing.times do
-      line << '-'
-    end
     line << '+'
     spacing.times do
       line << '-'
@@ -88,34 +80,40 @@ class Screen
     spacing.times do
       line << '-'
     end
+    line << '+'
+    spacing.times do
+      line << '-'
+    end
+    line << '+'
     line << "\n"
-    arr << line
+    canvas << line
   end
 
-  def print_symbol(arr)
-    arr.each do |row|
-      row.each do |v|
-        if v.nil?
-          print(' ')
-        else
-          print v
-        end
+  def show_board
+    canvas.each do |row|
+      row.each do |val|
+        print val
       end
-      puts('')
     end
   end
 
-  def print_hash_canvas(hash)
-    hash.each do |_k, v|
-      print v
-    end
-  end
-
-  def put_symbol(hash, x, y)
+  def put_symbol(symbol, x, y)
     y_offset = 4 * y
     x_offset = 8 * x
-    cross.each do |k, v|
-      hash[[k[0] + y_offset, k[1] + x_offset]] = v
+    symbol.each do |k, v|
+      canvas[k[0] + y_offset][k[1] + x_offset] = v
+    end
+  end
+
+  def update_canvas(board_state)
+    board_state.each_with_index do |row, nth_row|
+      row.each_with_index do |val, nth_column|
+        if val == 'p1'
+          put_symbol(circle, nth_row, nth_column)
+        elsif val == 'p2'
+          put_symbol(cross, nth_row, nth_column)
+        end
+      end
     end
   end
 
@@ -126,7 +124,7 @@ end
 
 # Manages players, e.g. gets input from them, stores their symbols and scores
 class Player
-  attr_accessor :symbol, :score
+  attr_accessor :symbol, :score, :name
 
   def initialize(name)
     @name = name
@@ -134,7 +132,7 @@ class Player
   end
 
   def choose
-    chosen_square = gets
+    return chosen_square = gets.to_i
   end
 end
 
@@ -147,9 +145,10 @@ class Board
     @size = size
     @tokens_to_win = tokens_to_win
   end
-  def set_token(who, where)
 
+  def set_token(who, where)
     return false if where > board.length * board[0].length
+
     # track on which element we are on
     cur_element_num = 1
     board.each_with_index do |row, y|
@@ -259,3 +258,6 @@ class Board
     end
   end
 end
+
+game = GameManager.new()
+game.play
