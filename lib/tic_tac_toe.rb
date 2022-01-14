@@ -9,16 +9,11 @@ class GameManager
   def initialize
     @board = Board.new
     @screen = Screen.new
-    @players =[Player.new('p1'), Player.new('p2')]
   end
 
   def play
-    loop do
-      board.set_token(players[0].name,players[0].choose)
       screen.update_canvas(board.board)
       screen.show_board
-      break if board.state? == 'victory'
-    end
   end
 
   def reset
@@ -34,55 +29,43 @@ class Screen
     @circle = { [1, 4] => '0', [2, 3] => '0', [2, 6] => '0', [3, 5] => '0' }
     @cross = { [1, 2] => '#', [1, 6] => '#', [2, 4] => '#', [3, 2] => '#', [3, 6] => '#' }
     @canvas = []
-    gen_canvas
+    gen_canvas(1,2)
   end
 
-  def gen_canvas(height = 3)
+  def gen_canvas(width = 3,height = 3)
     height.times do
-      gen_horizontal_line
-      gen_vertical_line
+      gen_horizontal_line(width)
+      gen_vertical_line(width)
     end
-    gen_horizontal_line
+    gen_horizontal_line(width)
   end
 
-  def gen_vertical_line(length = 3)
+  def gen_vertical_line(width = 3)
+    height = 3
     spacing = 8
-    line = []
-
-    length.times do
+    height.times do
       line = []
-      line << '|'
-      spacing.times do
-        line << ' '
+      width.times do
+        line << '|'
+        spacing.times do
+          line << ' '
+        end
       end
-      line << '|'
-      spacing.times do
-        line << ' '
-      end
-      line << '|'
-      spacing.times do
-        line << ' '
-      end
+      #ending
       line << '|'
       line << "\n"
       canvas << line
     end
   end
 
-  def gen_horizontal_line
+  def gen_horizontal_line(width=3)
     spacing = 8
     line = []
-    line << '+'
-    spacing.times do
-      line << '-'
-    end
-    line << '+'
-    spacing.times do
-      line << '-'
-    end
-    line << '+'
-    spacing.times do
-      line << '-'
+    width.times do
+      line << '+'
+      spacing.times do
+        line << '-'
+      end
     end
     line << '+'
     line << "\n"
@@ -108,9 +91,9 @@ class Screen
   def update_canvas(board_state)
     board_state.each_with_index do |row, nth_row|
       row.each_with_index do |val, nth_column|
-        if val == 'p1'
+        if val == '1'
           put_symbol(circle, nth_row, nth_column)
-        elsif val == 'p2'
+        elsif val == '2'
           put_symbol(cross, nth_row, nth_column)
         end
       end
@@ -126,7 +109,8 @@ end
 class Player
   attr_accessor :symbol, :score, :name
 
-  def initialize(name)
+  def initialize(name, ord)
+    @order = order
     @name = name
     @score = 0
   end
