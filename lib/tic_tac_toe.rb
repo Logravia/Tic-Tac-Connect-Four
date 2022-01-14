@@ -2,18 +2,21 @@
 
 require 'pry-byebug'
 
-# Manages the game - main loop, scores, board, board state, two player instances and the screen
+# Manages the game - main loop, asking players for input,
+# Asking BoardManager to place the input on its board
+# Asking DisplayManager to display board's data however it pleases
 class GameManager
   # 2D array for 3x3 board
-  attr_reader :board, :players, :screen
-  def initialize
-    @board = Board.new
-    @screen = Screen.new
+  attr_reader :board_manager, :players, :screen
+
+  def initialize(width, height)
+    @board_manager = BoardManager.new(width, height)
+    @screen = DisplayManager.new(width, height)
   end
 
   def play
-      screen.update_canvas(board.board)
-      screen.show_board
+    screen.update_canvas(board_manager.board)
+    screen.show_board
   end
 
   def reset
@@ -21,26 +24,30 @@ class GameManager
   end
 end
 
-# Manages what gets put on
-class Screen
+# Manages how the data of the board ought to be displayed
+# Generates an empty ASCII board of width*height squares
+# Puts on the ASCII board appropriate symbols depending on the state of the board
+# Prints the ASCII board with appropriate symbols onto the console
+class DisplayManager
   attr_reader :circle, :cross, :canvas
 
-  def initialize
+  def initialize(width, height)
     @circle = { [1, 4] => '0', [2, 3] => '0', [2, 6] => '0', [3, 5] => '0' }
     @cross = { [1, 2] => '#', [1, 6] => '#', [2, 4] => '#', [3, 2] => '#', [3, 6] => '#' }
-    @canvas = []
-    gen_canvas(1,2)
+    @canvas =  gen_canvas(width, height)
   end
 
-  def gen_canvas(width = 3,height = 3)
+  def gen_canvas(width, height)
+    slate = []
     height.times do
-      gen_horizontal_line(width)
-      gen_vertical_line(width)
+      gen_horizontal_line(width, slate)
+      gen_vertical_line(width, slate)
     end
-    gen_horizontal_line(width)
+    gen_horizontal_line(width, slate)
+    slate
   end
 
-  def gen_vertical_line(width = 3)
+  def gen_vertical_line(width, slate)
     height = 3
     spacing = 8
     height.times do
@@ -51,14 +58,14 @@ class Screen
           line << ' '
         end
       end
-      #ending
+      # ending
       line << '|'
       line << "\n"
-      canvas << line
+      slate << line
     end
   end
 
-  def gen_horizontal_line(width=3)
+  def gen_horizontal_line(width, slate)
     spacing = 8
     line = []
     width.times do
@@ -69,7 +76,7 @@ class Screen
     end
     line << '+'
     line << "\n"
-    canvas << line
+    slate << line
   end
 
   def show_board
@@ -91,9 +98,10 @@ class Screen
   def update_canvas(board_state)
     board_state.each_with_index do |row, nth_row|
       row.each_with_index do |val, nth_column|
-        if val == '1'
+        case val
+        when '1'
           put_symbol(circle, nth_row, nth_column)
-        elsif val == '2'
+        when '2'
           put_symbol(cross, nth_row, nth_column)
         end
       end
@@ -109,22 +117,26 @@ end
 class Player
   attr_accessor :symbol, :score, :name
 
-  def initialize(name, ord)
+  def initialize(name, _ord)
     @order = order
     @name = name
     @score = 0
   end
 
   def choose
-    return chosen_square = gets.to_i
+    chosen_square = gets.to_i
   end
 end
 
-class Board
+# Holds data about board of the game - where each player has put their piece.
+# Allows a piece to be put on the board.
+# Answers whether the game has been won, whether there's a tie or game can be continued.
+# Contains all the logic and methods to fulfill this purpose
+class BoardManager
   attr_reader :board, :size
 
-  def initialize(size = 3, tokens_to_win = 3)
-    @board = Array.new(size) { Array.new(size) }
+  def initialize(width, height, tokens_to_win = 3)
+    @board = Array.new(height) { Array.new(width) }
     @board_to_draw = []
     @size = size
     @tokens_to_win = tokens_to_win
@@ -138,12 +150,11 @@ class Board
     board.each_with_index do |row, y|
       row.each_with_index do |val, x|
         if where == cur_element_num
-          if val.nil?
-            board[y][x] = who
-            return true
-          else # place already has a value
-            return false
-          end
+          return false unless val.nil?
+
+          # Can only place if the value is nil, return true/false whether placed or not.
+          board[y][x] = who
+          return true
         end
         # checked one element time to update the count
         cur_element_num += 1
@@ -243,5 +254,5 @@ class Board
   end
 end
 
-game = GameManager.new()
+game = GameManager.new(3,3)
 game.play
