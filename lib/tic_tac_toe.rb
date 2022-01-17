@@ -6,42 +6,47 @@ require 'pry-byebug'
 # Asking BoardManager to place the input on its board
 # Asking CanvasManager to display board's data however it pleases
 class GameManager
-  attr_reader :board_manager, :players, :canvas
+  attr_reader :board, :players, :canvas
 
   def initialize(width, height, tokens_to_win)
-    @board_manager = BoardManager.new(width, height, tokens_to_win)
+    @board = BoardManager.new(width, height, tokens_to_win)
     @canvas = CanvasManager.new(width, height)
-    @players = [Player.new, Player.new]
   end
 
   def play
     turn = 0
     canvas.show
-    until board_manager.board_state? != 'unfinished'
+    canvas.number_squares()
+    until board.finished? or board.victory?
       which_player = turn % 2 # Depending on turn number it is either p0 or p1
       succesful_choice = false
 
+      puts "Turn of player #{which_player + 1 }."
+
       until succesful_choice
-        # TODO Make sure player can quit the game
-        choice = players[which_player].choose # Chooses a square to put his token on
+        choice = gets.chomp # Chooses a square to put his token on
         # set_token returns bool on whether the choice was legitmate
-        succesful_choice = board_manager.set_token(which_player, choice)
-        puts 'Sorry, that is not a valid choice. Try again' unless succesful_choice
+        exit if choice == 'q'
+        succesful_choice = board.set_token(which_player, choice.to_i)
+        puts 'Sorry, that is not a valid choice. Try again. Q to quit.' unless succesful_choice
       end
-      canvas.update(board_manager.board)
+
+      canvas.update(board.board)
       canvas.show
       turn += 1
     end
-    if board_manager.board_state? == 'victory'
-      puts "Player #{which_player} won!"
+
+    if board.victory?
+      print "Player #{which_player + 1} won!\n"
     else
-      puts 'Game ended in a tie'
+      print "It is a tie!\n"
     end
+
   end
 
   def reset
     # TODO: implement the two functions
-    board_manager.reset
+    board.reset
     canvas.reset
   end
 end
@@ -59,7 +64,8 @@ class BoardManager
   end
 
   def set_token(who, where)
-    return false if where > board.length * board[0].length
+    # TODO: Move validation to a different function
+    return false if where > board.length * board[0].length || where <= 0
 
     # track on which element we are on
     cur_element_num = 1
@@ -67,7 +73,6 @@ class BoardManager
       row.each_with_index do |val, x|
         if where == cur_element_num
           return false unless val.nil?
-
           # Can only place if the value is nil, return true/false whether placed or not.
           board[y][x] = who
           return true
@@ -78,15 +83,22 @@ class BoardManager
     end
   end
 
-  # Returns three possible states of the board: tie, unfinished, victory
-  def board_state?
-    # TODO break-up this function to into victory?, finished?, tie? for better readability
-    if victory?
-      'victory'
-    elsif board.flatten.any?(nil)
-      'unfinished'
-    else
-      'tie'
+  def tie?
+    finished? and not victory?
+  end
+
+  def finished?
+    return board.flatten.none?(nil)
+  end
+
+  def victory?
+    # When there are n consecutive tokens in any array on a board e.g. 3 X's in a row returns true
+    rows = board
+    if n_consec_tokens?(rows) ||
+       n_consec_tokens?(columns)     ||
+       n_consec_tokens?(l_diagonals) ||
+       n_consec_tokens?(r_diagonals)
+      true
     end
   end
 
@@ -160,15 +172,6 @@ class BoardManager
 
   # Returns true  if any of the rows, columns, diagonals contain
   # n consecutive tokens
-  def victory?
-    rows = board
-    if n_consec_tokens?(rows) ||
-       n_consec_tokens?(columns)     ||
-       n_consec_tokens?(l_diagonals) ||
-       n_consec_tokens?(r_diagonals)
-      true
-    end
-  end
 end
 
 # Manages how the data of the board ought to be displayed
@@ -178,7 +181,7 @@ end
 class CanvasManager
   def initialize(width, height)
     @circle = { [1, 4] => '0', [2, 3] => '0', [2, 6] => '0', [3, 5] => '0' }
-    @cross = { [1, 2] => '#', [1, 6] => '#', [2, 4] => '#', [3, 2] => '#', [3, 6] => '#' }
+    @cross = { [1, 3] => '#', [1, 7] => '#', [2, 5] => '#', [3, 3] => '#', [3, 7] => '#' }
     @canvas =  gen_canvas(width, height)
   end
 
@@ -206,22 +209,29 @@ class CanvasManager
     end
   end
 
-  private
+#  private
 
   attr_reader :circle, :cross, :canvas
 
-  # TODO Put a number at the edge of each square
-  def numer_squares
-    # Code
+  def number_squares
+    square_num = 1
+    canvas.each_with_index do |row, i|
+      row.each_with_index do |val, j|
+        if val == '|' and canvas[i-1][2] == '-' and row[j+1] != "\n"
+          row[j+1] = square_num
+          square_num += 1
+        end
+      end
+
+    end
   end
 
   # Puts given symbol (cross, circle) onto the ASCII canvas contained in an array
   def put_symbol(symbol, x, y)
-    # TODO fix spacing issues
-    y_offset = 4 * y
-    x_offset = 8 * x
+    y_offset = 9 * y
+    x_offset = 4 * x
     symbol.each do |k, v|
-      canvas[k[0] + y_offset][k[1] + x_offset] = v
+      canvas[k[0] + x_offset][k[1] + y_offset] = v
     end
   end
 
@@ -273,13 +283,6 @@ class CanvasManager
 end
 
 # Manages player, e.g. gets input from player,
-class Player
-  def initialize; end
-  def choose
-    # TODO make sure only numbers can be chosen
-    gets.to_i
-  end
-end
 
-game = GameManager.new(3, 3, 6)
+game = GameManager.new(3, 3, 3)
 game.play
