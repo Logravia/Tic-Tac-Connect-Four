@@ -35,12 +35,11 @@ class Game
     until board.finished? || board.victory?
       display.show
       which_player = turn % 2 # Depending on turn number it is either p0 or p1
-      puts "Turn of player #{which_player + 1}."
+      print "Turn of player #{which_player + 1}.\nPick a square: "
       process_input(which_player)
       display.update(board.data)
       turn += 1
     end
     print_result(which_player)
   end
-
 end

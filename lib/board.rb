@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-
 # Holds data about board of the game - where each player has put their piece.
 # Allows a piece to be put on the board.
 # Answers whether the game has been won, whether there's a tie or the game is unfinished
@@ -116,7 +115,7 @@ class Board
           token = cell_token
         end
       end
-      return true if token_count == tokens_to_win
+      return true if token_count >= tokens_to_win
     end
     false
   end

@@ -8,7 +8,8 @@ class Display
   def initialize(width, height)
     @circle = { [1, 4] => '0', [2, 3] => '0', [2, 6] => '0', [3, 5] => '0' }
     @cross = { [1, 3] => '#', [1, 7] => '#', [2, 5] => '#', [3, 3] => '#', [3, 7] => '#' }
-    @display =  gen_canvas(width, height)
+    @display = gen_canvas(width, height)
+    number_squares()
   end
 
   # Updates the ASCII display
@@ -43,8 +44,15 @@ class Display
     square_num = 1
     display.each_with_index do |row, i|
       row.each_with_index do |val, j|
+        # if we're on '|' and next column above us is '-' and it is not the last '|' with newline after it
+        # In other words if we're at the left edge of the square
         if (val == '|') && (display[i - 1][2] == '-') && (row[j + 1] != "\n")
-          row[j + 1] = square_num
+          indices_after_pipe = 1
+          # When number is made of two or more chars,
+          square_num.to_s.each_char do |char|
+            row[j + indices_after_pipe] = char
+            indices_after_pipe += 1
+          end
           square_num += 1
         end
       end
